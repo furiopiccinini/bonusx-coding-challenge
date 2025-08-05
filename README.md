@@ -83,7 +83,9 @@ PORT=3001
 ## 🛠️ Available Scripts
 
 ### Root level
-- `npm start` - Start both backend and frontend
+- `npm start` - Start backend in production mode
+- `npm run dev:backend` - Start backend in development mode
+- `npm run dev:frontend` - Start frontend in development mode
 - `npm run build` - Build both frontend and backend
 
 ### Backend
@@ -99,7 +101,7 @@ PORT=3001
 ## ⚠️ Important Notes
 
 ### Prototype Limitations:
-- **In-Memory Metadata**: File metadata (list, sizes) lost on server restart (files remain in S3)
+- **In-Memory Metadata**: File metadata (list, sizes)
 - **Single User**: Only demo user available
 - **No Database**: File metadata stored in memory
 - **AWS S3**: Files stored in actual AWS S3 buckets
@@ -118,7 +120,7 @@ PORT=3001
    - Ensure JWT token is valid
    - Check browser localStorage for token
    - Restart servers if needed
-   - Empty browser's cache
+   - Empty browser cache
 
 3. **Upload Failures**:
    - Verify file type and size limits
