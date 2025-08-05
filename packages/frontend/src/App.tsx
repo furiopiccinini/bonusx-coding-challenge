@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import LoginForm from './components/LoginForm';
 import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
 import { filesAPI } from './services/api';
-import { FileInfo } from './types';
+import { AuthResponse, FileInfo, User } from './types';
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<User | undefined>(undefined);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadFiles();
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
+      loadFiles();
+    }
+    setLoading(false);
   }, []);
 
   const loadFiles = async () => {
@@ -18,9 +28,21 @@ const App: React.FC = () => {
       setFiles(filesData);
     } catch (error) {
       console.error('Failed to load files:', error);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleAuthSuccess = (authData: AuthResponse) => {
+    localStorage.setItem('token', authData.access_token);
+    localStorage.setItem('user', JSON.stringify(authData.user));
+    setUser(authData.user);
+    loadFiles();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(undefined);
+    setFiles([]);
   };
 
   const handleFileUploaded = (file: FileInfo) => {
@@ -42,13 +64,20 @@ const App: React.FC = () => {
     );
   }
 
+  if (!user) {
+    return <LoginForm onAuthSuccess={handleAuthSuccess} />;
+  }
+
   return (
     <div className="container">
-      <div style={{ marginBottom: '20px' }}>
-        <h1>S3 Uploader App for BonusX Challenge</h1>
-        <p style={{ color: '#FFFFFF', marginTop: '8px' }}>
-          Upload files by dragging and dropping or clicking to select
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>File Uploader for BonusX</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span>Welcome, {user.username}!</span>
+          <button onClick={handleLogout} className="btn">
+            Logout
+          </button>
+        </div>
       </div>
 
       <FileUpload onFileUploaded={handleFileUploaded} />

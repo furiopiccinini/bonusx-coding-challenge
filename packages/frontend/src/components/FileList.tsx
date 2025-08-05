@@ -9,6 +9,7 @@ interface FileListProps {
 
 const FileList: React.FC<FileListProps> = ({ files, onFileDeleted }) => {
   const [deleting, setDeleting] = useState<string | undefined>(undefined);
+  const [downloading, setDownloading] = useState<string | undefined>(undefined);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -29,7 +30,7 @@ const FileList: React.FC<FileListProps> = ({ files, onFileDeleted }) => {
   };
 
   const handleDelete = async (fileId: string) => {
-    if (!window.confirm('Are you sure you want to delete this file?')) {
+    if (!window.confirm('Do you really want to delete this file?')) {
       return;
     }
 
@@ -45,12 +46,24 @@ const FileList: React.FC<FileListProps> = ({ files, onFileDeleted }) => {
     }
   };
 
+  const handleDownload = async (fileId: string) => {
+    setDownloading(fileId);
+    try {
+      await filesAPI.downloadFile(fileId);
+    } catch (error) {
+      console.error('Failed to download file:', error);
+      alert('Failed to download file');
+    } finally {
+      setDownloading(undefined);
+    }
+  };
+
   if (files.length === 0) {
     return (
       <div className="card">
         <h2>Your Files</h2>
         <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-          No files uploaded yet. Upload your first file above!
+          No files uploaded. Upload your first file!
         </p>
       </div>
     );
@@ -69,6 +82,18 @@ const FileList: React.FC<FileListProps> = ({ files, onFileDeleted }) => {
               </div>
             </div>
             <div className="file-actions">
+              <button
+                onClick={() => handleDownload(file.id)}
+                disabled={downloading === file.id}
+                className="btn btn-primary"
+                style={{ marginRight: '8px' }}
+              >
+                {downloading === file.id ? (
+                  <span className="loading"></span>
+                ) : (
+                  'Download'
+                )}
+              </button>
               <button
                 onClick={() => handleDelete(file.id)}
                 disabled={deleting === file.id}

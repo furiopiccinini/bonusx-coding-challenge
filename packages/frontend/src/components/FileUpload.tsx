@@ -13,7 +13,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded }) => {
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   const ALLOWED_FILE_TYPES = {
-    'application/pdf': ['.pdf'],
+    'application/pdf': ['.pdf'], // File type filter
     'image/jpeg': ['.jpg', '.jpeg'],
     'image/jpg': ['.jpg'],
     'image/png': ['.png'],
@@ -21,12 +21,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded }) => {
   };
 
   const validateFile = (file: File): string | undefined => {
-    // Check file size
+    
     if (file.size > MAX_FILE_SIZE) {
       return `File size must be less than 10MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`;
     }
 
-    // Check file type
     if (!ALLOWED_FILE_TYPES[file.type as keyof typeof ALLOWED_FILE_TYPES]) {
       return `File type not allowed. Allowed types: PDF, JPG, PNG, TXT`;
     }
@@ -51,6 +50,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded }) => {
     try {
       const uploadedFile = await filesAPI.uploadFile(file);
       onFileUploaded(uploadedFile);
+      alert(`File "${uploadedFile.originalName}" uploaded successfully!`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to upload file');
     } finally {
@@ -58,8 +58,29 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded }) => {
     }
   }, [onFileUploaded]);
 
+  const onDropRejected = useCallback((rejectedFiles: any[]) => {
+    const file = rejectedFiles[0];
+    let errorMessage = '';
+
+    if (file.errors) {
+      const error = file.errors[0];
+      if (error.code === 'file-invalid-type') {
+        errorMessage = 'Unsupported file type. Please upload PDF, JPG, PNG, or TXT files only.';
+      } else if (error.code === 'file-too-large') {
+        errorMessage = 'File is too large. Maximum size is 10MB.';
+      } else {
+        errorMessage = error.message;
+      }
+    } else {
+      errorMessage = 'File upload failed. Please try again.';
+    }
+
+    setError(errorMessage);
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     multiple: false,
     accept: ALLOWED_FILE_TYPES,
     maxSize: MAX_FILE_SIZE,
@@ -84,8 +105,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded }) => {
           <div>
             <p className="dropzone-text">
               {isDragActive
-                ? 'Drop the file here'
-                : 'Drag and drop a file here, or click to select'}
+                ? 'Drop your file here'
+                : 'Drag and drop a file here, or click to select from disk'}
             </p>
             <p className="dropzone-subtext">
               Supported formats: PDF, JPG, PNG, TXT (max 10MB)

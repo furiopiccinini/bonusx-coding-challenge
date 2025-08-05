@@ -1,26 +1,26 @@
-# File Upload Application (Prototype)
+# File Uploader for BonusX (MVP Prototype)
 
-A minimal viable prototype with NestJS backend and React frontend for file uploads.
+A "minimal viable prototype" with NestJS backend and React frontend for file uploads using presigned URLs (AWS S3).
 
-## Features
+## 🚀 Features
 
-- **Authentication**: JWT-based authentication with demo user
-- **File Upload**: Drag and drop file upload with progress indication
-- **File Management**: List, view, and delete uploaded files
-- **In-Memory Storage**: Files stored in memory for prototype purposes
-- **Modern UI**: Beautiful, responsive design with smooth animations
-- **TypeScript**: Full TypeScript support for both frontend and backend
+- **JWT Authentication**: Secure login with demo user (`demo` / `demo`)
+- **File Upload**: Drag and drop or file selection with progress notification
+- **Presigned URLs**: AWS S3 implementation with direct upload/download
+- **File Management**: List, download, and delete uploaded files
+- **File Metafata**: Display filename, size and date
+- **File Validation**: Size limit (10MB) and type restrictions (PDF, JPG, PNG, TXT)
+- **In-Memory Storage**: Files stored as Buffers for accurate downloads
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 bonusx-coding-challenge/
 ├── packages/
 │   ├── backend/          # NestJS backend
 │   │   ├── src/
-│   │   │   ├── auth/     # Authentication module
-│   │   │   ├── files/    # File upload module
-│   │   │   ├── users/    # User management
+│   │   │   ├── auth/     # JWT authentication
+│   │   │   ├── files/    # File upload & management
 │   │   │   └── ...
 │   │   └── ...
 │   └── frontend/         # React frontend
@@ -34,67 +34,57 @@ bonusx-coding-challenge/
 └── README.md
 ```
 
-## Prerequisites
+## ⚡ Quick Start
 
-- Node.js 18+ 
-- npm or yarn
-
-## Quick Start
-
-1. **Clone and install dependencies:**
+1. **Install dependencies:**
    ```bash
-   npm run install:all
+   npm install
    ```
 
-2. **Configure environment variables (optional):**
+2. **Start both servers:**
    ```bash
-   # Copy the example environment file
-   cp packages/backend/env.example packages/backend/.env
+   npm start
    ```
 
-3. **Start the development servers:**
-   ```bash
-   # Start backend (in one terminal)
-   npm run dev:backend
-   
-   # Start frontend (in another terminal)
-   npm run dev:frontend
-   ```
-
-4. **Access the application:**
+3. **Access the application:**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3001
 
-## Environment Variables
+4. **Login with demo credentials:**
+   - Username: `demo`
+   - Password: `demo`
 
-### Backend (.env file)
+## 🔧 Environment Variables
+
+### Backend (.env file in root directory)
 
 ```env
 # JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_SECRET=simple-secret-key
 
 # Server Configuration
 PORT=3001
-FRONTEND_URL=http://localhost:3000
 ```
 
-## API Endpoints
+## 📡 API Endpoints
 
 ### Authentication
-- `POST /auth/login` - User login (demo: demo@example.com / password)
+- `POST /auth/login` - User login with `{username, password}`
 
-### Files (requires authentication)
-- `POST /files/upload` - Upload a file
-- `GET /files` - Get user's files
+### Files (requires JWT authentication)
+- `POST /files/upload-url` - Generate presigned upload URL
+- `POST /files/:id/upload-data` - Upload file data to presigned URL
+- `POST /files/:id/complete-upload` - Complete upload process
+- `GET /files` - Get user's files list
+- `GET /files/:id/download-url` - Generate presigned download URL
+- `GET /files/:id/download` - Download file directly
 - `DELETE /files/:id` - Delete a file
 
-## Available Scripts
+## 🛠️ Available Scripts
 
 ### Root level
-- `npm run dev:backend` - Start backend in development mode
-- `npm run dev:frontend` - Start frontend in development mode
+- `npm start` - Start both backend and frontend
 - `npm run build` - Build both frontend and backend
-- `npm run install:all` - Install dependencies for all packages
 
 ### Backend
 - `npm run start:dev` - Start backend in development mode
@@ -106,43 +96,35 @@ FRONTEND_URL=http://localhost:3000
 - `npm run build` - Build the frontend
 
 
+## ⚠️ Important Notes
 
-## Development
+### Prototype Limitations:
+- **In-Memory Metadata**: File metadata (list, sizes) lost on server restart (files remain in S3)
+- **Single User**: Only demo user available
+- **No Database**: File metadata stored in memory
+- **AWS S3**: Files stored in actual AWS S3 buckets
 
-### Backend Development
-The backend is built with NestJS and includes:
-- JWT authentication with demo user
-- File upload handling with Multer
-- In-memory file storage
-- TypeScript support
+## 🐛 Troubleshooting
 
-### Frontend Development
-The frontend is built with React and includes:
-- Modern UI with CSS animations
-- Drag and drop file upload
-- Responsive design
-- TypeScript support
-- Axios for API communication
+### Common Issues:
 
+1. **Port Already in Use**:
+   ```bash
+   lsof -ti:3001 | xargs kill -9
+   lsof -ti:3000 | xargs kill -9
+   ```
 
+2. **Authorization Errors**:
+   - Ensure JWT token is valid
+   - Check browser localStorage for token
+   - Restart servers if needed
+   - Empty browser's cache
 
-## Security Considerations
+3. **Upload Failures**:
+   - Verify file type and size limits
+   - Check browser console for errors
+   - Ensure both servers are running
 
-- Change the JWT secret in production
-- Use environment variables for all sensitive data
-- Configure proper CORS settings
-- Use HTTPS in production
-- Implement rate limiting for production use
-- This is a prototype - files are stored in memory and will be lost on server restart
+## 📄 License
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is for demonstration purposes. 
+This project is for demonstration purposes as an MVP prototype. 
